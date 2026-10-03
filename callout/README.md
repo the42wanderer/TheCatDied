@@ -30,6 +30,18 @@ npx remotion render src/index.ts Showcase out/showcase.mp4 --codec=h264 --crf=17
 npx remotion still src/index.ts Detail-01-Headlamps out/headlamps.png
 ```
 
+## Intro
+
+`src/intro/` – two wireframe G's drive out of a void (Tron phase), park on the exact spots of the
+opening shot, flip to an ink-and-paper frame, and an ink wipe opens on the footage. The parked
+poses come from `public/showroom_pose.json`, solved from points picked on the opening frame:
+
+```sh
+python3 tools/solve_showroom.py
+```
+
+The intro is silent; the source audio starts with the footage so every cut stays on its beat.
+
 ## Wireframe hand-off assets
 
 The side shot freezes on frame 628. Its photo and traced line art are generated, and the 3D start pose

@@ -1,5 +1,5 @@
 import React from 'react';
-import {AbsoluteFill, OffthreadVideo, staticFile, useCurrentFrame} from 'remotion';
+import {AbsoluteFill, OffthreadVideo, Sequence, staticFile, useCurrentFrame} from 'remotion';
 import {BrutalistFrame, defaultBrutalistProps} from './BrutalistFrame';
 import {BrutalistDetail} from './BrutalistDetail';
 import {SpecCompact} from './SpecSheet';
@@ -8,8 +8,10 @@ import type {Pt} from './brutal/kit';
 import {DETAILS} from './series';
 import tracks from '../public/tracks.json';
 import {WireTail} from './wire/WireTail';
+import {INTRO_FRAMES, InkWipe, Intro} from './intro/Intro';
 
-export const SHOWCASE_FRAMES = 784;
+const EDIT_FRAMES = 784; // the source edit
+export const SHOWCASE_FRAMES = INTRO_FRAMES + EDIT_FRAMES;
 const VIDEO = 'source.mp4';
 
 type Shot = keyof typeof tracks;
@@ -56,7 +58,8 @@ const CARDS: {from: number; to: number; shot: Shot; design: number; hold?: boole
 // The side shot plays briefly, then freezes and hands over to the wireframe tail-light sequence.
 const WIRE_START = 628;
 
-export const Showcase: React.FC = () => {
+// The source edit with its overlays; frames here are relative to the end of the intro.
+const Edit: React.FC = () => {
   const frame = useCurrentFrame();
   return (
     <AbsoluteFill style={{background: '#000'}}>
@@ -72,7 +75,20 @@ export const Showcase: React.FC = () => {
           {c.el}
         </CardClock>
       ))}
-      <WireTail start={WIRE_START} end={SHOWCASE_FRAMES} />
+      <WireTail start={WIRE_START} end={EDIT_FRAMES} />
     </AbsoluteFill>
   );
 };
+
+// Wireframe intro, then the edit (its audio starts with the footage), with the ink wipe bridging the two.
+export const Showcase: React.FC = () => (
+  <AbsoluteFill style={{background: '#000'}}>
+    <Sequence durationInFrames={INTRO_FRAMES}>
+      <Intro />
+    </Sequence>
+    <Sequence from={INTRO_FRAMES}>
+      <Edit />
+    </Sequence>
+    <InkWipe />
+  </AbsoluteFill>
+);

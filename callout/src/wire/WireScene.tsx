@@ -57,7 +57,7 @@ export const WireScene: React.FC<{t: number; opacity: number; glow: number}> = (
   (xray.material as LineMaterial).opacity = 0.14 * opacity;
 
   return (
-    <ThreeCanvas linear flat width={1920} height={1080} style={{position: 'absolute', inset: 0}} camera={{fov: 50, near: 0.05, far: 100}}>
+    <ThreeCanvas flat width={1920} height={1080} style={{position: 'absolute', inset: 0}} camera={{fov: 50, near: 0.05, far: 100}}>
       <CameraRig t={t} />
       <primitive object={grid} />
       {model.solids.map((g, i) => (
