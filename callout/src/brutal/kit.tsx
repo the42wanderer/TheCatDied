@@ -141,7 +141,7 @@ export const HeaderStrip: React.FC<{left: string; right: string; index: string}>
   </div>
 );
 
-// Red block with notched top edge and chamfered bottom-right corner.
+// Red block with a notch above the barcode tag (clear of the title) and chamfered bottom-right corner.
 export const TitleBlock: React.FC<{title: string; size?: number; height?: number; tag: string}> = ({
   title,
   size = 136,
@@ -158,7 +158,7 @@ export const TitleBlock: React.FC<{title: string; size?: number; height?: number
         height,
         background: C.blood,
         position: 'relative',
-        clipPath: `polygon(0 0, 18% 0, calc(18% + ${n}px) ${n}px, calc(46% - ${n}px) ${n}px, 46% 0, 100% 0, 100% calc(100% - ${n}px), calc(100% - ${n}px) 100%, 0 100%)`,
+        clipPath: `polygon(0 0, calc(100% - 196px) 0, calc(100% - 196px + ${n}px) ${n}px, calc(100% - 16px - ${n}px) ${n}px, calc(100% - 16px) 0, 100% 0, 100% calc(100% - ${n}px), calc(100% - ${n}px) 100%, 0 100%)`,
       }}
     >
       <div
