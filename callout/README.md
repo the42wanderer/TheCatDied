@@ -8,6 +8,8 @@ Brutalist spec overlays for `../APR0001B_SPEED(2).mp4`.
 - `src/series.ts` – per-card layout (panel position, target boxes) in design-frame pixels
 - `src/Showcase.tsx` – the timeline: which card shows on which frames of which shot
 - `public/tracks.json` – per-frame camera/car tracking used to keep target boxes locked on
+- `src/wire/` – the tail-light sequence: a G-Class wireframe built from primitives (`model.ts`, real
+  W465 length/wheelbase/width), its camera move (`camera.ts`) and the photo -> line art -> 3D hand-off (`WireTail.tsx`)
 
 ## Setup
 
@@ -26,6 +28,16 @@ If Remotion can't download Chrome, point it at a local headless shell with `REMO
 npx remotion render src/index.ts Showcase out/showcase.mp4 --codec=h264 --crf=17
 # one design still
 npx remotion still src/index.ts Detail-01-Headlamps out/headlamps.png
+```
+
+## Wireframe hand-off assets
+
+The side shot freezes on frame 628. Its photo and traced line art are generated, and the 3D start pose
+is solved from points picked on that photo:
+
+```sh
+python3 tools/edges.py public/source.mp4 628 public/side_freeze.jpg public/side_edges.png
+python3 tools/solve_pose.py   # prints P0 for src/wire/camera.ts
 ```
 
 ## Re-tracking
