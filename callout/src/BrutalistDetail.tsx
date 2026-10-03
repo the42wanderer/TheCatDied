@@ -14,10 +14,12 @@ import {
   TitleBlock,
   mono,
 } from './brutal/kit';
+import {Type, Wipe, useMapper, useProgress} from './brutal/anim';
 import {LIGHTING} from './content';
 
 export type DetailProps = {
   background: string;
+  live?: boolean; // video mode: transparent, no still background
   step: number; // 1-based index into LIGHTING
   panel: Pt & {w: number};
   targets: Target[];
@@ -69,14 +71,18 @@ const BeamDiagram: React.FC = () => {
   );
 };
 
-export const BrutalistDetail: React.FC<DetailProps> = ({background, step, panel, targets, leaderTo, diagram, offscreen}) => {
+export const BrutalistDetail: React.FC<DetailProps> = ({background, live, step, panel, targets, leaderTo, diagram, offscreen}) => {
   const spec = LIGHTING[step - 1];
+  const map = useMapper();
+  const lines = useProgress(12, 12);
+  const arrow = useProgress(14, 8);
+  const mt = targets.map((t) => ({c: map.p(t.c), size: t.size * map.s}));
   const idx = String(step).padStart(2, '0');
   const first = targets[0];
 
   return (
-    <AbsoluteFill style={{background: C.ink}}>
-      <Background src={background} />
+    <AbsoluteFill style={{background: live ? 'transparent' : C.ink}}>
+      {live ? null : <Background src={background} />}
 
       <Lines>
         {first && leaderTo ? (
@@ -87,22 +93,23 @@ export const BrutalistDetail: React.FC<DetailProps> = ({background, step, panel,
             strokeWidth={3}
           />
         ) : null}
-        {targets.length > 1 ? (
+        {mt.length > 1 ? (
           <line
-            x1={targets[0].c.x + targets[0].size / 2}
-            y1={targets[0].c.y}
-            x2={targets[1].c.x - targets[1].size / 2}
-            y2={targets[1].c.y}
+            opacity={lines}
+            x1={mt[0].c.x + mt[0].size / 2}
+            y1={mt[0].c.y}
+            x2={mt[0].c.x + mt[0].size / 2 + (mt[1].c.x - mt[1].size / 2 - mt[0].c.x - mt[0].size / 2) * lines}
+            y2={mt[0].c.y + (mt[1].c.y - mt[0].c.y) * lines}
             stroke={C.bone}
             strokeWidth={1}
             strokeDasharray="4 6"
           />
         ) : null}
         {targets.map((t, i) => (
-          <TargetBox key={i} {...t} />
+          <TargetBox key={i} delay={2 + i * 4} {...t} />
         ))}
         {offscreen ? (
-          <g>
+          <g opacity={arrow} transform={`translate(${(1 - arrow) * (offscreen.dir === 'left' ? 30 : -30)} 0)`}>
             <polygon
               points={
                 offscreen.dir === 'left'
@@ -131,15 +138,21 @@ export const BrutalistDetail: React.FC<DetailProps> = ({background, step, panel,
         <TitleBlock title={spec.title} size={120} height={108} tag={`SYS.02 / ${idx} OF 05`} />
         <Plate width={panel.w} padding="18px 26px 12px">
           <div style={{fontFamily: mono, fontWeight: 700, fontSize: 22, color: C.ink, letterSpacing: 0.3, lineHeight: 1.25}}>
-            {spec.value}
+            <Type text={spec.value} delay={13} cps={3.5} />
           </div>
           {spec.note ? (
-            <div style={{fontFamily: mono, fontSize: 15, color: C.blood, marginTop: 6, fontWeight: 700}}>{spec.note}</div>
+            <div style={{fontFamily: mono, fontSize: 15, color: C.blood, marginTop: 6, fontWeight: 700}}>
+              <Type text={spec.note} delay={20} cps={4} />
+            </div>
           ) : null}
-          {diagram === 'beam' ? <BeamDiagram /> : null}
+          {diagram === 'beam' ? (
+            <Wipe delay={18} len={14}>
+              <BeamDiagram />
+            </Wipe>
+          ) : null}
           <div style={{marginTop: 12, borderTop: `2px solid ${C.ink}`}}>
             {spec.facts.map(([k, v], i) => (
-              <FactRow key={k} k={k} v={v} last={i === spec.facts.length - 1} />
+              <FactRow key={k} k={k} v={v} last={i === spec.facts.length - 1} delay={(diagram ? 28 : 22) + i * 4} />
             ))}
           </div>
         </Plate>

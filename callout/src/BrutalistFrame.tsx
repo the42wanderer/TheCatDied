@@ -14,10 +14,13 @@ import {
   TitleBlock,
   mono,
 } from './brutal/kit';
+import {Type, Wipe, useMapper, useProgress} from './brutal/anim';
 import {LIGHTING} from './content';
 
 export type BrutalistProps = {
   background: string;
+  video?: string; // live mode: no still background, loupe magnifies this video
+  live?: boolean;
   lampL: Pt;
   lampR: Pt;
   badge: Pt;
@@ -31,17 +34,22 @@ export const defaultBrutalistProps: BrutalistProps = {
 };
 
 // Overview frame: the full lighting spec list, anchored to the black G in the showroom shot.
-export const BrutalistFrame: React.FC<BrutalistProps> = ({background, lampL, lampR, badge}) => {
+export const BrutalistFrame: React.FC<BrutalistProps> = ({background, video, live, lampL: kL, lampR: kR, badge}) => {
+  const map = useMapper();
+  const lampL = map.p(kL);
+  const lampR = map.p(kR);
+  const lines = useProgress(10, 12);
   const P = {x: 1200, y: 30, w: 672};
   const L = {x: 1006, y: 30, size: 188, zoom: 2.0};
 
   return (
-    <AbsoluteFill style={{background: C.ink}}>
-      <Background src={background} />
+    <AbsoluteFill style={{background: live ? 'transparent' : C.ink}}>
+      {live ? null : <Background src={background} />}
 
       <Loupe
         src={background}
-        focus={lampL}
+        video={video}
+        focus={kL}
         x={L.x}
         y={L.y}
         size={L.size}
@@ -51,6 +59,7 @@ export const BrutalistFrame: React.FC<BrutalistProps> = ({background, lampL, lam
       />
 
       <Lines>
+        <g opacity={lines}>
         <line x1={lampL.x - 45} y1={lampL.y - 45} x2={L.x} y2={L.y + L.size + LOUPE_CAPTION_H} stroke={C.bone} strokeWidth={1} />
         <line
           x1={lampL.x + 45}
@@ -64,9 +73,10 @@ export const BrutalistFrame: React.FC<BrutalistProps> = ({background, lampL, lam
         <text x={(lampL.x + lampR.x) / 2} y={lampL.y - 72} fill={C.bone} fontFamily={mono} fontSize={12} letterSpacing={2} textAnchor="middle">
           L/R SYNC · MATCHED PAIR
         </text>
-        <TargetBox c={lampL} size={90} label="LH-01" />
-        <TargetBox c={lampR} size={80} label="#E7E3DA · RH-02" />
-        <TargetBox c={badge} size={62} />
+        </g>
+        <TargetBox c={kL} size={90} label="LH-01" delay={2} />
+        <TargetBox c={kR} size={80} label="#E7E3DA · RH-02" delay={6} />
+        <TargetBox c={badge} size={62} delay={9} />
       </Lines>
 
       <div style={{position: 'absolute', left: P.x, top: P.y, width: P.w, boxShadow: '0 30px 60px rgba(0,0,0,0.5)'}}>
@@ -84,11 +94,13 @@ export const BrutalistFrame: React.FC<BrutalistProps> = ({background, lampL, lam
                 borderBottom: i < LIGHTING.length - 1 ? '1px solid rgba(14,14,14,0.18)' : 'none',
               }}
             >
-              <span style={{width: 34, color: C.blood, fontWeight: 700, fontSize: 16}}>{String(i + 1).padStart(2, '0')}</span>
-              <span style={{width: 132, fontSize: 15, letterSpacing: 1, paddingTop: 1}}>{s.label}</span>
+              <Wipe delay={14 + i * 4} len={5} dir="down" style={{width: 34, color: C.blood, fontWeight: 700, fontSize: 16}}>
+                {String(i + 1).padStart(2, '0')}
+              </Wipe>
+              <Type text={s.label} delay={15 + i * 4} cps={3} style={{width: 132, fontSize: 15, letterSpacing: 1, paddingTop: 1}} />
               <span style={{flex: 1}}>
-                <span style={{display: 'block', fontSize: 16, fontWeight: 700, letterSpacing: 0.3}}>{s.value}</span>
-                {s.note ? <span style={{display: 'block', fontSize: 13, color: C.graphite, marginTop: 1}}>{s.note}</span> : null}
+                <Type text={s.value} delay={17 + i * 4} cps={3.5} style={{display: 'block', fontSize: 16, fontWeight: 700, letterSpacing: 0.3}} />
+                {s.note ? <Type text={s.note} delay={22 + i * 4} cps={4} style={{display: 'block', fontSize: 13, color: C.graphite, marginTop: 1}} /> : null}
               </span>
             </div>
           ))}
