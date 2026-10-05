@@ -30,6 +30,16 @@ npx remotion render src/index.ts Showcase out/showcase.mp4 --codec=h264 --crf=17
 npx remotion still src/index.ts Detail-01-Headlamps out/headlamps.png
 ```
 
+## Off-road clip
+
+`src/offroad/` – a standalone 7.2 s clip (`OffRoad` composition): the wireframe G crawling over
+procedural terrain in five quick shots plus a closing card. `sim.ts` holds the terrain, the vehicle
+(body pitch/roll from the four contact patches, independent wheel travel) and the shot list.
+
+```sh
+npx remotion render src/index.ts OffRoad out/offroad.mp4 --codec=h264 --crf=17
+```
+
 ## Intro
 
 `src/intro/` – two wireframe G's drive out of a void (Tron phase), park on the exact spots of the

@@ -72,7 +72,25 @@ const edgesOf = (out: number[], g: THREE.BufferGeometry, threshold = 25) => {
   for (let i = 0; i < e.length; i++) out.push(e[i]);
 };
 
-export const buildModel = (): Model => {
+// One road wheel centred on its hub, axle along z; spokes face the `side` (+1 right, -1 left).
+export const buildWheel = (side: number) => {
+  const solids: THREE.BufferGeometry[] = [];
+  const edges: number[] = [];
+  const tyre = new THREE.CylinderGeometry(DIM.wheelR, DIM.wheelR, 0.28, 32);
+  tyre.rotateX(Math.PI / 2);
+  solids.push(tyre);
+  edgesOf(edges, tyre, 40);
+  const c: V3 = [0, 0, side * (0.14 + 0.006)];
+  circle(edges, c, [1, 0, 0], [0, 1, 0], 0.27);
+  circle(edges, c, [1, 0, 0], [0, 1, 0], 0.07, 16);
+  for (let k = 0; k < 10; k++) {
+    const a = (k / 10) * Math.PI * 2;
+    seg(edges, [0.07 * Math.cos(a), 0.07 * Math.sin(a), c[2]], [0.27 * Math.cos(a), 0.27 * Math.sin(a), c[2]]);
+  }
+  return {solids, edges};
+};
+
+export const buildModel = (opts: {wheels: boolean} = {wheels: true}): Model => {
   const D = DIM;
   const solids: THREE.BufferGeometry[] = [];
   const edges: number[] = [];
@@ -104,18 +122,14 @@ export const buildModel = (): Model => {
   // --- Wheels, arches, flares ----------------------------------------------
   for (const ax of [D.axleF, D.axleR]) {
     for (const s of [-1, 1]) {
-      const zOut = s * (D.track + 0.14);
-      const zIn = s * (D.track - 0.14);
-      const tyre = new THREE.CylinderGeometry(D.wheelR, D.wheelR, 0.28, 32);
-      tyre.rotateX(Math.PI / 2);
-      tyre.translate(ax, D.wheelR, s * D.track);
-      add(tyre, 40);
-      const c: V3 = [ax, D.wheelR, zOut + s * eps];
-      circle(edges, c, [1, 0, 0], [0, 1, 0], 0.27);
-      circle(edges, c, [1, 0, 0], [0, 1, 0], 0.07, 16);
-      for (let k = 0; k < 10; k++) {
-        const a = (k / 10) * Math.PI * 2;
-        seg(edges, [ax + 0.07 * Math.cos(a), D.wheelR + 0.07 * Math.sin(a), c[2]], [ax + 0.27 * Math.cos(a), D.wheelR + 0.27 * Math.sin(a), c[2]]);
+      if (opts.wheels) {
+        const w = buildWheel(s);
+        const at = new THREE.Matrix4().makeTranslation(ax, D.wheelR, s * D.track);
+        w.solids.forEach((g) => solids.push(g.clone().applyMatrix4(at)));
+        for (let i = 0; i < w.edges.length; i += 3) {
+          const v = new THREE.Vector3(w.edges[i], w.edges[i + 1], w.edges[i + 2]).applyMatrix4(at);
+          edges.push(v.x, v.y, v.z);
+        }
       }
       // Arch flare: a squared-off arch standing proud of the body side.
       const r = 0.5;
@@ -128,7 +142,6 @@ export const buildModel = (): Model => {
       poly(edges, [[ax - r - 0.08, D.sill, z], ...arch, [ax + r + 0.08, D.sill, z]], false);
       seg(edges, [ax - r - 0.08, D.sill, z], [ax - r - 0.08, D.sill, s * D.halfW]);
       seg(edges, [ax + r + 0.08, D.sill, z], [ax + r + 0.08, D.sill, s * D.halfW]);
-      void zIn;
     }
   }
 
