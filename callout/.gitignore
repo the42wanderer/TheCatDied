@@ -1,0 +1,6 @@
+node_modules/
+out/
+# copy of ../APR0001B_SPEED(2).mp4, recreated by: cp '../APR0001B_SPEED(2).mp4' public/source.mp4
+public/source.mp4
+# licensed third-party models: keep out of git while the repo is public
+public/gtr/*.stl
